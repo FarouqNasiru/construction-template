@@ -8,11 +8,13 @@
   <!-- Mobile Metas -->
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
   <!-- Site Metas -->
-  <meta name="keywords" content="" />
-  <meta name="description" content="" />
+  <meta name="keywords"
+    content="Building construction, engineering construction, interior decoration, quantity surveying, project management, architectural planning, estate surveying, property management, project consulting, general procurement, construction services, professional builders, Ilorin construction company, real estate management, construction experts, trusted consultants, engineering solutions, reliable contractors." />
+  <meta name="description"
+    content="Azabis Consulting Ltd offers expert building and engineering construction, interior decoration, quantity surveying, project management, architectural planning, and estate surveying services. Trusted professionals in Ilorin for reliable and high-quality project execution." />
   <meta name="author" content="" />
 
-  <title>Construction company template</title>
+  <title>Azabis Consulting Limited</title>
 
 
   <!-- bootstrap core css -->
@@ -22,7 +24,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
 
   <!--owl slider stylesheet -->
-  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css" />
+  <link rel="stylesheet" type="text/css"
+    href="https://cdnjs.cloudflare.com/ajax/libs/OwlCarousel2/2.3.4/assets/owl.carousel.min.css" />
 
   <!-- font awesome style -->
   <link href="css/font-awesome.min.css" rel="stylesheet" />
@@ -31,6 +34,173 @@
   <link href="css/style.css" rel="stylesheet" />
   <!-- responsive style -->
   <link href="css/responsive.css" rel="stylesheet" />
+
+
+
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js";
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyC-WS-hE1Zf-pk5iFkKEwWZVBcEbhKTre0",
+      authDomain: "azabis.firebaseapp.com",
+      projectId: "azabis",
+      storageBucket: "azabis.firebasestorage.app",
+      messagingSenderId: "14141507703",
+      appId: "1:14141507703:web:540c1cbfd7e55782769e72"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const loginBtn = document.getElementById("loginBtn");
+      const logoutBtn = document.getElementById("logoutBtn");
+      const dashboard = document.getElementById("dashboard");
+      const productName = document.getElementById("productName");
+      const productImage = document.getElementById("productImage");
+      const productPrice = document.getElementById("productPrice");
+      const productDescription = document.getElementById("productDescription");
+      const addProductBtn = document.getElementById("addProduct");
+      const productList = document.getElementById("productList");
+      const productsSection = document.getElementById("products");
+
+      onAuthStateChanged(auth, user => {
+        if (user) {
+          loginBtn.style.display = "none";
+          logoutBtn.style.display = "block";
+          dashboard.style.display = "block";
+        } else {
+          loginBtn.style.display = "block";
+          logoutBtn.style.display = "none";
+          dashboard.style.display = "none";
+        }
+      });
+
+      loginBtn.addEventListener("click", async () => {
+        try {
+          const provider = new GoogleAuthProvider();
+          await signInWithPopup(auth, provider);
+        } catch (error) {
+          console.error("Login Error:", error);
+          alert("Popup blocked. Please enable pop-ups or try again.");
+        }
+      });
+
+      logoutBtn.addEventListener("click", async () => {
+        try {
+          await signOut(auth);
+        } catch (error) {
+          console.error("Logout Error:", error);
+        }
+      });
+
+      addProductBtn.addEventListener("click", async () => {
+        const name = productName.value;
+        const file = productImage.files[0];
+        const price = productPrice.value;
+        const description = productDescription.value;
+
+        if (name && file && price && description) {
+          const reader = new FileReader();
+          reader.readAsDataURL(file);
+          reader.onloadend = async function () {
+            const base64String = reader.result;
+            try {
+              await addDoc(collection(db, "products"), {
+                name,
+                image: base64String,
+                price,
+                description
+              });
+              alert("Product added!");
+              productName.value = "";
+              productImage.value = "";
+              loadProducts();
+            } catch (error) {
+              console.error("Error adding product: ", error);
+            }
+          };
+        }
+      });
+
+      async function loadProducts() {
+        const productsSection = document.getElementById("products");
+        const productList = document.getElementById("productList");
+        productsSection.innerHTML = "";
+        productList.innerHTML = "";
+
+        const querySnapshot = await getDocs(collection(db, "products"));
+        querySnapshot.forEach(doc => {
+          const data = doc.data();
+          const productId = doc.id;
+
+          // Create product card
+          const productDiv = document.createElement("div");
+          productDiv.classList.add("product-card");
+          productDiv.innerHTML = `
+                    <img src="${data.image}" alt="Product Image">
+                    <h4>${data.name}</h4>
+                    <p>${data.price}</p>
+                    <p class="product-description">${data.description}</p>
+                    <button class="btn1 know-more-btn">Know More →</button>
+                `;
+          productsSection.appendChild(productDiv);
+
+
+
+
+          // Add event listener for "Know More" button
+          const knowMoreBtn = productDiv.querySelector(".know-more-btn");
+          const description = productDiv.querySelector(".product-description");
+
+          knowMoreBtn.addEventListener("click", () => {
+            if (description.style.display === "none" || description.style.display === "") {
+              description.style.display = "block";
+              knowMoreBtn.textContent = "Show Less ↑";
+            } else {
+              description.style.display = "none";
+              knowMoreBtn.textContent = "Know More →";
+            }
+          });
+
+
+
+
+
+          // Add product to the dashboard list
+          const productItem = document.createElement("li");
+          productItem.innerHTML = `
+                    ${data.name} 
+                    <button class="delete-btn" data-id="${productId}">❌</button>
+                `;
+          productList.appendChild(productItem);
+        });
+
+        // Delete product functionality
+        document.querySelectorAll(".delete-btn").forEach(button => {
+          button.addEventListener("click", async (e) => {
+            const productId = e.target.dataset.id;
+            if (confirm("Are you sure you want to delete this product?")) {
+              await deleteDoc(doc(db, "products", productId));
+              alert("Product deleted successfully!");
+              loadProducts();
+            }
+          });
+        });
+      }
+
+      loadProducts();
+    });
+  </script>
+
+
+
+
+
 
 </head>
 
@@ -94,11 +264,12 @@
         <div class="container-fluid">
           <nav class="navbar navbar-expand-lg custom_nav-container ">
             <a class="navbar-brand" href="index.html">
-              <img src="images/azabis-logo.png"  alt="">
+              <img src="images/azabis-logo.png" alt="">
             </a>
             </a>
 
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+              aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
               <span class=""> </span>
             </button>
 
@@ -116,24 +287,23 @@
                 <li class="nav-item">
                   <a class="nav-link" href="project.html">Project</a>
                 </li>
-                <li class="nav-item">
-                  <a class="nav-link" href="testimonial.html">Testimonial</a>
-                </li>
+
                 <li class="nav-item">
                   <a class="nav-link" href="contact.html">Contact Us</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="#"> Login</a>
+                  <a class="nav-link" id="loginBtn" href="#"> Login</a>
                 </li>
-               <!-- <form class="form-inline">
+                <button id="logoutBtn" style="display:none;">Logout</button>
+                <!-- <form class="form-inline">
                   <button class="btn  my-2 my-sm-0 nav_search-btn" type="submit">
                     <i class="fa fa-search" aria-hidden="true"></i>
                   </button>
                 </form>-->
               </ul>
               <div class="quote_btn-container">
-                <a href="" class="quote_btn">
-                  Get A Quote
+                <a href="contact.html" class="quote_btn">
+                  Get In Touch
                 </a>
               </div>
             </div>
@@ -156,11 +326,12 @@
                       CONSULTING <br>
                       LIMITED
                     </h1>
+                    <p class="hello">Trusted solutions in construction, project management, and consultancy.</p>
                     <div class="btn-box">
-                      <a href="" class="btn1">
+                      <a href="contact.html" class="btn1">
                         Contact Us
                       </a>
-                      <a href="" class="btn2">
+                      <a href="about.html" class="btn2">
                         About Us
                       </a>
                     </div>
@@ -179,11 +350,12 @@
                       CONSULTING <br>
                       LIMITED
                     </h1>
+                    <p class="hello">Strategic solutions for modern construction and estate management.</p>
                     <div class="btn-box">
-                      <a href="" class="btn1">
+                      <a href="contact.html" class="btn1">
                         Contact Us
                       </a>
-                      <a href="" class="btn2">
+                      <a href="about.html" class="btn2">
                         About Us
                       </a>
                     </div>
@@ -202,11 +374,12 @@
                       CONSULTING <br>
                       LIMITED
                     </h1>
+                    <p class="hello">Experience quality, efficiency, and innovation with us.</p>
                     <div class="btn-box">
-                      <a href="" class="btn1">
+                      <a href="contact.html" class="btn1">
                         Contact Us
                       </a>
-                      <a href="" class="btn2">
+                      <a href="about.html" class="btn2">
                         About Us
                       </a>
                     </div>
@@ -225,11 +398,12 @@
                       CONSULTING <br>
                       LIMITED
                     </h1>
+                    <p class="hello">Precision, professionalism, and excellence in every project.</p>
                     <div class="btn-box">
-                      <a href="" class="btn1">
+                      <a href="contact.html" class="btn1">
                         Contact Us
                       </a>
-                      <a href="" class="btn2">
+                      <a href="about.html" class="btn2">
                         About Us
                       </a>
                     </div>
@@ -248,11 +422,12 @@
                       CONSULTING <br>
                       LIMITED
                     </h1>
+                    <p class="hello">Engineering the future with precision and expertise.</p>
                     <div class="btn-box">
-                      <a href="" class="btn1">
+                      <a href="contact.html" class="btn1">
                         Contact Us
                       </a>
-                      <a href="" class="btn2">
+                      <a href="about.html" class="btn2">
                         About Us
                       </a>
                     </div>
@@ -286,7 +461,7 @@
             Services
           </h2>
           <p>
-            There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration
+            We are passionate about meeting the specifications and quality demands on every project we work on.
           </p>
         </div>
         <div class="row">
@@ -297,17 +472,25 @@
               </div>
               <div class="detail-box">
                 <h5>
-                  Construction
-                  Services
+                  Building and Engineering Construction
                 </h5>
-                <p>
-                  fact that a reader will be distracted by the readable content of a page when looking at its layout.
-                  The
-                  point of using L
-                </p>
-                <a href="">
-                  Read More
-                </a>
+                <a href="#" class="btn2" data-popup="popup1">Read More</a>
+              </div>
+
+
+              <div id="popup1" class="popup">
+                <div class="popup-content">
+                  <span class="close">&times;</span>
+                  <div class="img-box">
+                    <img src="images/s1.png" alt="">
+                  </div>
+                  <h5><br>Building and Engineering Construction</h5> <br>
+                  <p>We deliver innovative and durable construction solutions tailored to meet modern engineering
+                    standards
+                    and client specifications. From concept to completion, we ensure quality in every structure we
+                    build.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -318,17 +501,24 @@
               </div>
               <div class="detail-box">
                 <h5>
-                  Building
-                  Modeling
+                  Interior <br> Decoration
                 </h5>
-                <p>
-                  fact that a reader will be distracted by the readable content of a page when looking at its layout.
-                  The
-                  point of using L
-                </p>
-                <a href="">
-                  Read More
-                </a>
+
+                <a href="#" class="btn2" data-popup="popup2">Read More</a>
+              </div>
+              <div id="popup2" class="popup">
+                <div class="popup-content">
+                  <span class="close">&times;</span>
+                  <div class="img-box">
+                    <img src="images/s2.png" alt="">
+                  </div>
+                  <h5><br>Interior Decoration</h5> <br>
+                  <p>We deliver innovative and durable construction solutions tailored to meet modern engineering
+                    standards
+                    and client specifications. From concept to completion, we ensure quality in every structure we
+                    build.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -339,17 +529,25 @@
               </div>
               <div class="detail-box">
                 <h5>
-                  Pre
-                  construction
+                  Quantity Surveying and Project Management
                 </h5>
-                <p>
-                  fact that a reader will be distracted by the readable content of a page when looking at its layout.
-                  The
-                  point of using L
-                </p>
-                <a href="">
-                  Read More
-                </a>
+
+                <a href="#" class="btn2" data-popup="popup3">Read More</a>
+              </div>
+
+
+              <div id="popup3" class="popup">
+                <div class="popup-content">
+                  <span class="close">&times;</span>
+                  <div class="img-box">
+                    <img src="images/s3.png" alt="">
+                  </div>
+                  <h5><br>Quantity Surveying and Project Management</h5> <br>
+                  <p>Our expert team provides precise cost estimation, budget control, and efficient project management
+                    to ensure timely and cost-effective project delivery. We bring professionalism and accuracy to every
+                    project.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -360,19 +558,129 @@
               </div>
               <div class="detail-box">
                 <h5>
-                  Management
+                  Architectural <br> Planning
                 </h5>
-                <p>
-                  fact that a reader will be distracted by the readable content of a page when looking at its layout.
-                  The
-                  point of using L
-                </p>
-                <a href="">
-                  Read More
-                </a>
+
+                <a href="#" class="btn2" data-popup="popup4">Read More</a>
+              </div>
+
+              <div id="popup4" class="popup">
+                <div class="popup-content">
+                  <span class="close">&times;</span>
+                  <div class="img-box">
+                    <img src="images/s4.png" alt="">
+                  </div>
+                  <h5><br>Architectural Planning</h5> <br>
+                  <p>
+                    We design innovative architectural plans that blend functionality with aesthetics. Let us bring your
+                    vision to life with exceptional designs tailored to your needs.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
+
+
+
+
+          <div class="col-md-6 col-lg-3">
+            <div class="box ">
+              <div class="img-box">
+                <img src="images/s4.png" alt="">
+              </div>
+              <div class="detail-box">
+                <h5>
+                  Estate Surveying and Property Management
+                </h5>
+
+                <a href="#" class="btn2" data-popup="popup5">Read More</a>
+                </a>
+              </div>
+
+
+              <div id="popup5" class="popup">
+                <div class="popup-content">
+                  <span class="close">&times;</span>
+                  <div class="img-box">
+                    <img src="images/s4.png" alt="">
+                  </div>
+                  <h5><br>Estate Surveying and Property Management</h5> <br>
+                  <p>
+                    Our estate surveying services help you optimize property value while ensuring seamless property
+                    management. Trust us for reliable advice and efficient handling of your assets.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+
+
+
+          <div class="col-md-6 col-lg-3">
+            <div class="box ">
+              <div class="img-box">
+                <img src="images/s3.png" alt="">
+              </div>
+              <div class="detail-box">
+                <h5>
+                  Project <br> Consulting
+                </h5>
+
+                <a href="#" class="btn2" data-popup="popup6">Read More</a>
+              </div>
+
+
+              <div id="popup6" class="popup">
+                <div class="popup-content">
+                  <span class="close">&times;</span>
+                  <div class="img-box">
+                    <img src="images/s3.png" alt="">
+                  </div>
+                  <h5><br>Project Consulting</h5> <br>
+                  <p>
+                    We offer expert guidance and solutions to make your projects successful. From planning to execution,
+                    we help you achieve your goals with clarity and precision.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+
+
+
+
+          <div class="col-md-6 col-lg-3">
+            <div class="box ">
+              <div class="img-box">
+                <img src="images/s1.png" alt="">
+              </div>
+              <div class="detail-box">
+                <h5>
+                  General <br> Procurement
+                </h5>
+
+                <a href="#" class="btn2" data-popup="popup7">Read More</a>
+              </div>
+
+
+              <div id="popup7" class="popup">
+                <div class="popup-content">
+                  <span class="close">&times;</span>
+                  <div class="img-box">
+                    <img src="images/s1.png" alt="">
+                  </div>
+                  <h5><br>General Procurement</h5> <br>
+                  <p>
+                    Our procurement services ensure you get the best quality materials and resources at competitive
+                    prices. We prioritize efficiency and reliability in every transaction.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
@@ -394,16 +702,18 @@
               </h2>
             </div>
             <p>
-              There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration
-              in some form, by injected humour, or randomised words which don't look even slightly believable. If you
-              are going to use a passage of Lorem Ipsum, you need to be sure there isn't anything embarrassing hidden in
-              the middle of text. All
+              Azabis Consulting Ltd is a multi-disciplinary company specializing in Building and Engineering
+              Construction, Interior Decoration, Quantity Surveying, Project Management, Architectural Planning, Estate
+              Surveying, Property Management, Project Consulting, and General Procurement. We are committed to
+              delivering innovative, cost-effective, and high-quality solutions that exceed client expectations.
             </p>
-            <a href="">
-              Read More
-            </a>
+            <a href="about.html">Read More</a>
           </div>
         </div>
+
+
+
+
         <div class="col-md-6 ">
           <div class="img-box">
             <img src="images/about-img.jpg" alt="">
@@ -427,7 +737,18 @@
           Projects
         </h2>
       </div>
-      <div class="carousel-wrap ">
+
+
+
+
+
+      <section id="products">
+      </section>
+
+
+
+
+      <!-- <div class="carousel-wrap ">
         <div class="filter_box">
           <h6>
             Category filter
@@ -539,14 +860,33 @@
             </div>
           </div>
         </div>
-      </div>
+      </div> -->
     </div>
   </section>
+
+
+
+
+
+
+  <section id="dashboard" style="display:none;">
+    <h2>Owner's Dashboard</h2>
+    <input type="text" id="productName" placeholder="Heading">
+    <input type="text" id="productPrice" placeholder="Service Name">
+    <input type="text" id="productDescription" placeholder="Description">
+    <input type="file" id="productImage">
+    <button id="addProduct">Add Product</button>
+    <ul id="productList"></ul>
+  </section>
+
+
+
+
 
   <!-- end project section -->
 
   <!-- client section -->
-  <section class="client_section layout_padding">
+  <section class="client_section layout_padding" id="test">
     <div class="container">
       <div class="heading_container heading_center">
         <h2>
@@ -562,13 +902,13 @@
               <div class="col-md-10 mx-auto">
                 <div class="box">
                   <div class="img-box">
-                    <img src="images/client.jpg" alt="">
+                    <img src="images/test.png" alt="">
                   </div>
                   <div class="detail-box">
                     <div class="client_info">
                       <div class="client_name">
                         <h5>
-                          Mr. Ebuka
+                          Samuel O.
                         </h5>
                         <h6>
                           Customer
@@ -577,13 +917,8 @@
                       <i class="fa fa-quote-left" aria-hidden="true"></i>
                     </div>
                     <p>
-                      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
-                      labore
-                      et
-                      dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-                      aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
-                      cillum
-                      dolore eu fugia
+                      "Azabis Consulting Ltd exceeded my expectations! Their professionalism, attention to detail, and
+                      timely project execution made the entire process seamless. Highly recommended!"
                     </p>
                   </div>
                 </div>
@@ -597,7 +932,7 @@
               <div class="col-md-10 mx-auto">
                 <div class="box">
                   <div class="img-box">
-                    <img src="images/client.jpg" alt="">
+                    <img src="images/test.png" alt="">
                   </div>
                   <div class="detail-box">
                     <div class="client_info">
@@ -612,13 +947,8 @@
                       <i class="fa fa-quote-left" aria-hidden="true"></i>
                     </div>
                     <p>
-                      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
-                      labore
-                      et
-                      dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-                      aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
-                      cillum
-                      dolore eu fugia
+                      "Azabis Consulting Ltd transformed my space with their interior decoration services. The designs
+                      were modern, elegant, and exactly what I wanted!"
                     </p>
                   </div>
                 </div>
@@ -632,7 +962,7 @@
               <div class="col-md-10 mx-auto">
                 <div class="box">
                   <div class="img-box">
-                    <img src="images/client.jpg" alt="">
+                    <img src="images/test.png" alt="">
                   </div>
                   <div class="detail-box">
                     <div class="client_info">
@@ -647,13 +977,8 @@
                       <i class="fa fa-quote-left" aria-hidden="true"></i>
                     </div>
                     <p>
-                      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
-                      labore
-                      et
-                      dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-                      aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
-                      cillum
-                      dolore eu fugia
+                      "Trustworthy and highly skilled professionals! They handled my construction project with precision
+                      and delivered on time. I’m very satisfied with their work."
                     </p>
                   </div>
                 </div>
@@ -690,10 +1015,8 @@
               Project done on time
             </h5>
             <p>
-              Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC,
-              making it over 2000 years old. Richard McClintock, a Latin professor at Hampden-Sydney College in
-              Virginia, looked up one of the more obscure Latin words, consectetur, from a Lorem Ipsum passage, and
-              going through the
+              With a proven track record of successful projects, we bring experience and expertise to every task. Our
+              portfolio reflects our dedication to quality and excellence.
             </p>
           </div>
         </div>
@@ -706,10 +1029,8 @@
               Always avaliable
             </h5>
             <p>
-              Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC,
-              making it over 2000 years old. Richard McClintock, a Latin professor at Hampden-Sydney College in
-              Virginia, looked up one of the more obscure Latin words, consectetur, from a Lorem Ipsum passage, and
-              going through the
+              We are committed to being accessible whenever you need us, providing prompt and reliable support
+              throughout your project. Your convenience and satisfaction are our top priorities.
             </p>
           </div>
         </div>
@@ -722,19 +1043,13 @@
               Professional and responsible
             </h5>
             <p>
-              Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC,
-              making it over 2000 years old. Richard McClintock, a Latin professor at Hampden-Sydney College in
-              Virginia, looked up one of the more obscure Latin words, consectetur, from a Lorem Ipsum passage, and
-              going through the
+              Our team of seasoned professionals ensures every project is handled with integrity, accountability, and
+              the highest standards. You can trust us to deliver exceptional results every time.
             </p>
           </div>
         </div>
       </div>
-      <div class="btn-box">
-        <a href="">
-          Read More
-        </a>
-      </div>
+
     </div>
   </section>
 
@@ -794,19 +1109,21 @@
         <a href="">
           <i class="fa fa-phone" aria-hidden="true"></i>
           <span>
-            Call : +01 123455678990
+            Call : +234 803 757 4500
+            <br>+234 806 554 4561
           </span>
         </a>
         <a href="">
           <i class="fa fa-envelope" aria-hidden="true"></i>
           <span>
-            Email : demo@gmail.com
+            Email : azabisconsultingltd@gmail.com
+
           </span>
         </a>
         <a href="">
           <i class="fa fa-map-marker" aria-hidden="true"></i>
           <span>
-            Location
+            Shop 5, Idi-Agbon Compound Emir's Road, Ilorin Kwara State.
           </span>
         </a>
       </div>
@@ -823,51 +1140,12 @@
                 <a class="" href="service.html">Services</a>
                 <a class="" href="about.html"> About</a>
                 <a class="" href="project.html">Project</a>
-                <a class="" href="testimonial.html">Testimonial</a>
+                <a class="" href="#test">Testimonial</a>
                 <a class="" href="contact.html">Contact Us</a>
               </div>
             </div>
           </div>
-          <!--<div class="col-sm-6 col-md-4 col-lg-3 mx-auto">
-            <div class="info_post">
-              <h5>
-                INSTAGRAM FEEDS
-              </h5>
-              <div class="post_box">
-                <div class="img-box">
-                  <img src="images/instagram.jpg" alt="">
-                </div>
-                <div class="img-box">
-                  <img src="images/instagram.jpg" alt="">
-                </div>
-                <div class="img-box">
-                  <img src="images/instagram.jpg" alt="">
-                </div>
-                <div class="img-box">
-                  <img src="images/instagram.jpg" alt="">
-                </div>
-                <div class="img-box">
-                  <img src="images/instagram.jpg" alt="">
-                </div>
-                <div class="img-box">
-                  <img src="images/instagram.jpg" alt="">
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="col-md-4">
-            <div class="info_form">
-              <h4>
-                SIGN UP TO OUR NEWSLETTER
-              </h4>
-              <form action="">
-                <input type="text" placeholder="Enter Your Email" />
-                <button type="submit">
-                  Subscribe
-                </button>
-              </form>
-            </div>
-          </div>-->
+         
         </div>
       </div>
       <div class="info_bottom">
@@ -917,8 +1195,9 @@
   <!-- jQery -->
   <script src="js/jquery-3.4.1.min.js"></script>
   <!-- popper js -->
-  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous">
-  </script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+    integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous">
+    </script>
   <!-- bootstrap js -->
   <script src="js/bootstrap.js"></script>
   <!-- owl slider -->
@@ -932,6 +1211,41 @@
   <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCh39n5U-4IoWpsVGUHWdqB6puEkhRLdmI&callback=myMap">
   </script>
   <!-- End Google Map -->
+
+  <script>
+
+    document.addEventListener("DOMContentLoaded", function () {
+      // Get all popup links and close buttons
+      var popupLinks = document.querySelectorAll("[data-popup]"); // Selects all elements with data-popup attribute
+
+      popupLinks.forEach(function (popupLink) {
+        popupLink.addEventListener("click", function (event) {
+          event.preventDefault();
+          var popupId = popupLink.getAttribute("data-popup"); // Get the target popup ID
+          var popupBox = document.getElementById(popupId); // Find the corresponding popup
+
+          if (popupBox) {
+            popupBox.style.display = "block";
+
+            // Find the close button inside this popup
+            var closeBtn = popupBox.querySelector(".close");
+            if (closeBtn) {
+              closeBtn.addEventListener("click", function () {
+                popupBox.style.display = "none";
+              });
+            }
+
+            // Close popup when clicking outside of it
+            window.addEventListener("click", function (event) {
+              if (event.target === popupBox) {
+                popupBox.style.display = "none";
+              }
+            });
+          }
+        });
+      });
+    });
+  </script>
 
 </body>
 
